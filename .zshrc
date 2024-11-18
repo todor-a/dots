@@ -20,7 +20,6 @@ source /opt/homebrew/opt/chruby/share/chruby/auto.sh
 ZSH_THEME="powerlevel10k/powerlevel10k"
 
 plugins=(
-  ls
   npm
   git
   history
@@ -36,6 +35,8 @@ plugins=(
 source $ZSH/oh-my-zsh.sh
 
 alias c=$'clear'
+
+alias zl=$'zellij'
 
 # rust
 alias cfmt=$'cargo fmt'
@@ -91,6 +92,10 @@ if [ -f '/Users/todor/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/tod
 eval "$(zoxide init zsh)"
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+# Load zellij completions
+autoload -U +X compinit && compinit
+. <( zellij setup --generate-completion zsh | sed -Ee 's/^(_(zellij) ).*/compdef \1\2/' )
 
 setopt HIST_EXPIRE_DUPS_FIRST
 setopt HIST_IGNORE_DUPS
