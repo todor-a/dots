@@ -37,6 +37,7 @@ source $ZSH/oh-my-zsh.sh
 alias c=$'clear'
 
 alias zl=$'zellij'
+alias lsa=$'eza -loa --total-size'
 
 # rust
 alias cfmt=$'cargo fmt'
