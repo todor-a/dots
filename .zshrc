@@ -21,7 +21,6 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 
 plugins=(
   npm
-  git
   history
   aliases
   zsh-bat
@@ -37,7 +36,6 @@ source $ZSH/oh-my-zsh.sh
 alias c=$'clear'
 
 alias zl=$'zellij'
-alias lsa=$'eza -loa --total-size'
 
 # rust
 alias cfmt=$'cargo fmt'
@@ -57,27 +55,31 @@ alias snap=$'nr snap'
 alias t=$'() { npm run test --ignore-scripts -- --watch --no-coverage -u --verbose "$@" ;}'
 
 # git
+alias g='git'
+
 alias frequentgit='history | cut -c 8- | grep git | sort | uniq -c  | sort -n -r | head -n 10'
-alias gp=$'git push'
-alias ga=$'git add .'
-alias gc=$'git checkout'
-alias gpr=$'git fetch --prune && git pull --rebase'
-alias gcb=$'git checkout -b'
-alias gcm='git checkout $(git rev-parse --abbrev-ref origin/HEAD | sed "s|origin/||")'
-alias gcau=$'git checkout auto-update'
+
 alias git-list-untracked='git fetch --prune && git branch -r | awk "{print \$1}" | egrep -v -f /dev/fd/0 <(git branch -vv | grep origin) | awk "{print \$1}"'
 alias git-remove-untracked='git fetch --prune && git branch -r | awk "{print \$1}" | egrep -v -f /dev/fd/0 <(git branch -vv | grep origin) | awk "{print \$1}" | xargs git branch -D'
-alias gsq=$'git reset $(git merge-base master $(git branch --show-current))'
 
+alias ga=$'g aa'
+alias gp=$'g push'
+alias gc=$'g checkout'
+alias gpr=$'g fetch --prune && g pull --rebase'
+alias gcb=$'g go' # go to a branch (if exists; if not, create it)
+alias gsq=$'g reset-branch'
+alias gcm='g com' # checkout the master/main branch
+alias gcau='g c auto-update' # go to the auto-update branch
+
+# arr
 alias arr="$SOLUTION_REPO/tooling/arr.sh"
-alias lfr="$SOLUTION_REPO/kubernetes/local-full-refresh.sh"
 alias arrp=$'ENV=production DBD=true arr'
 
-alias fmt=$'nr format'
-
+# utility
+alias lfr="$SOLUTION_REPO/kubernetes/local-full-refresh.sh"
 alias run-sh=$'LOG_PRETTY=true LOG_LEVEL=error ./run.sh'
 
-alias check-port=checkPort
+alias fmt=$'nr format'
 
 alias dots='/usr/bin/git --git-dir=/Users/todor/.cfg/ --work-tree=/Users/todor'
 
