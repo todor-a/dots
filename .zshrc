@@ -37,6 +37,8 @@ alias c=$'clear'
 
 alias zl=$'zellij'
 
+alias itl=$'() { ./test.sh --local "$@" }'
+
 # rust
 alias cfmt=$'cargo fmt'
 alias cit=$'cargo insta test'
@@ -52,10 +54,12 @@ alias nrss=$'nr start:staging --ignore-scripts'
 alias nrc=$'nr compile'
 alias nrw=$'nr watch'
 alias snap=$'nr snap'
-alias t=$'() { npm run test --ignore-scripts -- --watch --no-coverage -u --verbose "$@" ;}'
+alias t=$'() { npm run test --ignore-scripts -- --watch --no-coverage -u --verbose --expand "$@" ;}'
 
 # git
 alias g='git'
+
+alias prv='gh pr view --web'
 
 alias frequentgit='history | cut -c 8- | grep git | sort | uniq -c  | sort -n -r | head -n 10'
 
@@ -63,21 +67,29 @@ alias git-list-untracked='git fetch --prune && git branch -r | awk "{print \$1}"
 alias git-remove-untracked='git fetch --prune && git branch -r | awk "{print \$1}" | egrep -v -f /dev/fd/0 <(git branch -vv | grep origin) | awk "{print \$1}" | xargs git branch -D'
 
 alias ga=$'g aa'
-alias gp=$'g push'
-alias gc=$'g checkout'
-alias gpr=$'g fetch --prune && g pull --rebase'
-alias gcb=$'g go' # go to a branch (if exists; if not, create it)
+alias gp=$'g gp'
+alias gcb=$'g go'
+alias gpr=$'g p'
+alias gss=$'g s'
+alias gd=$'g discard'
 alias gsq=$'g reset-branch'
 alias gcm='g com' # checkout the master/main branch
-alias gcau='g c auto-update' # go to the auto-update branch
+alias gcam='g ca' # commit all changes with message
+alias gcau='g go auto-update' # go to the auto-update branch
 
 # arr
 alias arr="$SOLUTION_REPO/tooling/arr.sh"
+alias arr-psql=$'arr sql -t=ro --skip-dbeaver; PGPASSWORD=$(arr print-sql-password) psql -h localhost -p 5433 -U todor.andonov@payhawk.com payhawk'
+alias arr-pgcli=$'arr sql -t=ro --skip-dbeaver; PGPASSWORD=$(arr print-sql-password) pgcli -h localhost -p 5433 -U todor.andonov@payhawk.com -d payhawk --less-chatty'
 alias arrp=$'ENV=production DBD=true arr'
+alias arrp-psql=$'arrp sql -t=ro -r="support tickets" --skip-dbeaver; PGPASSWORD=$(arrp print-sql-password) psql -h localhost -p 5432 -U todor.andonov@payhawk.com payhawk'
+alias arrp-pgcli=$'arrp sql -t=ro -r="support tickets" --skip-dbeaver; PGPASSWORD=$(arrp print-sql-password) pgcli -h localhost -p 5432 -U todor.andonov@payhawk.com -d payhawk --less-chatty'
+# alias sync-db=$'arr sql -t=ro --skip-dbeaver; export SCHEMA="$1"; export PGUSER=$(arr print-sql-username); export PGPASSWORD=$(arr print-sql-password); pg_dump --dbname="postgresql://localhost:5433/payhawk" --schema="$SCHEMA" --file="$HOME/Documents/$SCHEMA.sql"; psql --dbname="postgresql://postgres:password@localhost:31234/payhawk" --file="$HOME/Documents/$1.sql"'
+alias sync-db-prod=$'arrp sql -t=ro -r="Sync schema" --skip-dbeaver; export SCHEMA="$1"; export PGUSER=$(arrp print-sql-username); export PGPASSWORD=$(arrp print-sql-password); pg_dump --dbname="postgresql://localhost:5432/payhawk" --schema="$SCHEMA" --file="$HOME/Documents/$SCHEMA.sql"; psql --dbname="postgresql://postgres:password@localhost:31234/payhawk" --file="$HOME/Documents/$SCHEMA.sql"'
 
 # utility
 alias lfr="$SOLUTION_REPO/kubernetes/local-full-refresh.sh"
-alias run-sh=$'LOG_PRETTY=true LOG_LEVEL=error ./run.sh'
+alias run-sh=$'LOG_PRETTY=true LOG_LEVEL=info ./run.sh'
 
 alias fmt=$'nr format'
 
@@ -108,3 +120,31 @@ setopt HIST_FIND_NO_DUPS
 setopt HIST_SAVE_NO_DUPS
 
 . "$HOME/.local/bin/env"
+
+sync_db() {
+  # Check if schema name is provided
+  if [ -z "$1" ]; then
+    echo "Usage: sync_db <schema_name>"
+    return 1
+  fi
+
+  # Variables
+  local SCHEMA="$1"
+  local PGUSER=$(arr print-sql-username)
+  local PGPASSWORD=$(arr print-sql-password)
+  local DUMP_FILE="$HOME/Documents/$SCHEMA.sql"
+  local SOURCE_DB="postgresql://localhost:5433/payhawk"
+  local TARGET_DB="postgresql://postgres:password@localhost:31234/payhawk"
+
+  # Execute commands
+  arr sql -t=ro --skip-dbeaver
+  export SCHEMA
+  export PGUSER
+  export PGPASSWORD
+
+  # Perform pg_dump
+  pg_dump --dbname="$SOURCE_DB" --schema="$SCHEMA" --file="$DUMP_FILE"
+
+  # Import to target database
+  psql --dbname="$TARGET_DB" --file="$DUMP_FILE"
+}
